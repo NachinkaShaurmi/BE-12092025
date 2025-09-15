@@ -4,15 +4,25 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from "typeorm";
 import { Exclude, Transform } from "class-transformer";
 import { ApiProperty } from "@nestjs/swagger";
+import { Account } from "../../account/entities/account.entity";
 
 @Entity("users")
 export class User {
   @ApiProperty({ description: 'User ID', example: '123e4567-e89b-12d3-a456-426614174000' })
   @PrimaryGeneratedColumn("uuid")
   id: string;
+
+  @ApiProperty({ description: 'User name', example: 'John Doe' })
+  @Column("varchar", { length: 255 })
+  name: string;
+
+  @ApiProperty({ description: 'User email', example: 'john@example.com' })
+  @Column("varchar", { length: 255, unique: true })
+  email: string;
 
   @ApiProperty({ description: 'User login', example: 'john_doe' })
   @Column("varchar", { length: 255 })
@@ -36,6 +46,9 @@ export class User {
   @UpdateDateColumn({ name: "updated_at" })
   @Transform(({ value }) => Number(new Date(value).getTime()))
   updatedAt: Date;
+
+  @OneToMany(() => Account, account => account.user)
+  accounts: Account[];
 
   constructor(partial: Partial<User>) {
     Object.assign(this, partial);

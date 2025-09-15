@@ -10,13 +10,15 @@ import * as bcrypt from "bcrypt";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { User } from "./entities/user.entity";
+import { AccountService } from "../account/account.service";
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private accountService: AccountService
   ) {}
 
   private async hashPassword(password: string): Promise<string> {
@@ -32,7 +34,10 @@ export class UserService {
       password: hashedPassword,
     });
 
-    return this.userRepository.save(user);
+    const savedUser = await this.userRepository.save(user);
+    await this.accountService.create({ userId: savedUser.id });
+    
+    return savedUser;
   }
 
   async findAll() {
