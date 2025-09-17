@@ -7,12 +7,13 @@ import {
   ParseUUIDPipe,
   SerializeOptions,
 } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
 import { AccountService } from "./account.service";
 import { CreateAccountDto } from "./dto/create-account.dto";
 import { Account } from "./entities/account.entity";
 
 @ApiTags("accounts")
+@ApiBearerAuth()
 @Controller("account")
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}

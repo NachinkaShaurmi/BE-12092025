@@ -6,12 +6,13 @@ import {
   Param,
   ParseUUIDPipe,
 } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
 import { TransactionService } from "./transaction.service";
 import { CreateTransactionDto } from "./dto/create-transaction.dto";
 import { Transaction } from "./entities/transaction.entity";
 
 @ApiTags('transactions')
+@ApiBearerAuth()
 @Controller("transaction")
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
