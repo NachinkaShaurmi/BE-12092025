@@ -1,4 +1,4 @@
-import { IsEnum, IsUUID, IsOptional, IsNumber } from "class-validator";
+import { IsEnum, IsUUID, IsOptional, IsNumber, IsString } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { Currency } from "../entities/account.entity";
 
@@ -16,4 +16,9 @@ export class CreateAccountDto {
   @IsNumber()
   @IsOptional()
   balance?: number;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  name?: string;
 }

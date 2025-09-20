@@ -7,6 +7,7 @@ import {
   JoinColumn,
 } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
+import { Transform, Expose } from "class-transformer";
 import { Account } from "../../account/entities/account.entity";
 
 @Entity("transactions")
@@ -35,11 +36,11 @@ export class Transaction {
   @CreateDateColumn()
   date: Date;
 
-  @ManyToOne(() => Account, account => account.outgoingTransactions)
+  @ManyToOne(() => Account, (account) => account.outgoingTransactions)
   @JoinColumn({ name: "fromAccountId" })
   fromAccount: Account;
 
-  @ManyToOne(() => Account, account => account.incomingTransactions)
+  @ManyToOne(() => Account, (account) => account.incomingTransactions)
   @JoinColumn({ name: "toAccountId" })
   toAccount: Account;
 }

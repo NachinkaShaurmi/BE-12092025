@@ -6,10 +6,12 @@ import {
   Param,
   ParseUUIDPipe,
   SerializeOptions,
+  Put,
 } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
 import { AccountService } from "./account.service";
 import { CreateAccountDto } from "./dto/create-account.dto";
+import { UpdateAccountDto } from "./dto/update-account.dto";
 import { Account } from "./entities/account.entity";
 
 @ApiTags("accounts")
@@ -47,5 +49,16 @@ export class AccountController {
   @ApiResponse({ status: 200, type: [Account] })
   findByUserId(@Param("userId", ParseUUIDPipe) userId: string) {
     return this.accountService.findByUserId(userId);
+  }
+
+  @Put(":id")
+  @SerializeOptions({ groups: ["account"] })
+  @ApiOperation({ summary: "Update account" })
+  @ApiResponse({ status: 200, type: Account })
+  update(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() updateAccountDto: UpdateAccountDto
+  ) {
+    return this.accountService.update(id, updateAccountDto);
   }
 }

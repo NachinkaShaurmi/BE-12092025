@@ -30,6 +30,11 @@ export class Account {
   @Expose()
   userId: string;
 
+  @ApiProperty()
+  @Column("varchar", { length: 255, default: "" })
+  @Expose({ groups: ['account'] })
+  name: string;
+
   @ApiProperty({ enum: Currency })
   @Column({ type: "enum", enum: Currency })
   @Expose({ groups: ['account'] })

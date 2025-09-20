@@ -11,10 +11,6 @@ export class CreateTransactionDto {
   toAccountId: string;
 
   @ApiProperty()
-  @IsUUID()
-  userId: string;
-
-  @ApiProperty()
   @IsNumber()
   @IsPositive()
   amount: number;
