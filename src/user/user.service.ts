@@ -36,7 +36,7 @@ export class UserService {
 
     const savedUser = await this.userRepository.save(user);
     await this.accountService.create({ userId: savedUser.id });
-    
+
     return savedUser;
   }
 
@@ -58,23 +58,35 @@ export class UserService {
         const user = await manager.findOneBy(User, { id });
         if (!user) throw new NotFoundException("User not found");
 
-        const isPasswordValid = await bcrypt.compare(
-          updateUserDto.oldPassword,
-          user.password
-        );
+        const updateData: {
+          name?: string;
+          password?: string;
+          version: () => string;
+        } = { version: () => "version + 1" };
 
-        if (!isPasswordValid) {
-          throw new ForbiddenException("Old password is incorrect");
+        if (updateUserDto.name) {
+          updateData.name = updateUserDto.name;
         }
 
-        const hashedPassword = await this.hashPassword(
-          updateUserDto.newPassword
-        );
+        if (updateUserDto.oldPassword && updateUserDto.newPassword) {
+          const isPasswordValid = await bcrypt.compare(
+            updateUserDto.oldPassword,
+            user.password
+          );
+
+          if (!isPasswordValid) {
+            throw new ForbiddenException("Old password is incorrect");
+          }
+
+          updateData.password = await this.hashPassword(
+            updateUserDto.newPassword
+          );
+        }
 
         const result = await manager
           .createQueryBuilder()
           .update(User)
-          .set({ password: hashedPassword, version: () => "version + 1" })
+          .set(updateData)
           .where("id = :id AND version = :version", {
             id,
             version: user.version,
