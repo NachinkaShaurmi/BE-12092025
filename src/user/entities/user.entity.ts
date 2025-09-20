@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from "typeorm";
-import { Exclude, Transform } from "class-transformer";
+import { Exclude, Transform, Expose } from "class-transformer";
 import { ApiProperty } from "@nestjs/swagger";
 import { Account } from "../../account/entities/account.entity";
 
@@ -48,7 +48,15 @@ export class User {
   updatedAt: Date;
 
   @OneToMany(() => Account, account => account.user)
+  @Expose()
   accounts: Account[];
+
+  @ApiProperty({ description: 'Total balance across all accounts', example: 5000.50 })
+  @Expose()
+  get balance(): number {
+    if (!this.accounts || this.accounts.length === 0) return 0;
+    return this.accounts.reduce((sum, account) => sum + Number(account.balance), 0);
+  }
 
   constructor(partial: Partial<User>) {
     Object.assign(this, partial);

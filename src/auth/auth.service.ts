@@ -26,7 +26,9 @@ export class AuthService {
   ) {}
 
   async signup(createUserDto: CreateUserDto) {
-    const hashedPassword = await this.hashService.hashPassword(createUserDto.password);
+    const hashedPassword = await this.hashService.hashPassword(
+      createUserDto.password
+    );
     const user = this.userRepository.create({
       ...createUserDto,
       password: hashedPassword,
@@ -53,7 +55,9 @@ export class AuthService {
       throw new ForbiddenException("Invalid password");
     }
 
-    return this.generateTokens(user.id, user.login);
+    const tokens = await this.generateTokens(user.id, user.login);
+
+    return { ...tokens, userId: user.id };
   }
 
   async refresh(refreshToken?: string) {
@@ -76,8 +80,6 @@ export class AuthService {
       throw new ForbiddenException("Invalid or expired refresh token");
     }
   }
-
-
 
   private async generateTokens(userId: string, login: string) {
     const payload: JwtPayload = { userId, login };
