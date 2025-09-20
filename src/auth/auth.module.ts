@@ -8,6 +8,7 @@ import { User } from "../user/entities/user.entity";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { APP_GUARD } from "@nestjs/core";
 import { AccountModule } from "../account/account.module";
+import { CommonModule } from "../common/common.module";
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AccountModule } from "../account/account.module";
     }),
     ConfigModule,
     AccountModule,
+    CommonModule,
   ],
   controllers: [AuthController],
   providers: [

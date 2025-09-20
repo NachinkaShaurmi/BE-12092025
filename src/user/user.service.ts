@@ -6,11 +6,11 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, EntityManager } from "typeorm";
-import * as bcrypt from "bcrypt";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { User } from "./entities/user.entity";
 import { AccountService } from "../account/account.service";
+import { HashService } from "../common/services/hash.service";
 
 @Injectable()
 export class UserService {
@@ -18,17 +18,14 @@ export class UserService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private configService: ConfigService,
-    private accountService: AccountService
+    private accountService: AccountService,
+    private hashService: HashService
   ) {}
 
-  private async hashPassword(password: string): Promise<string> {
-    const salt = this.configService.get("CRYPT_SALT");
 
-    return bcrypt.hash(password, parseInt(salt, 10));
-  }
 
   async create(createUserDto: CreateUserDto) {
-    const hashedPassword = await this.hashPassword(createUserDto.password);
+    const hashedPassword = await this.hashService.hashPassword(createUserDto.password);
     const user = this.userRepository.create({
       ...createUserDto,
       password: hashedPassword,
@@ -69,7 +66,7 @@ export class UserService {
         }
 
         if (updateUserDto.oldPassword && updateUserDto.newPassword) {
-          const isPasswordValid = await bcrypt.compare(
+          const isPasswordValid = await this.hashService.comparePassword(
             updateUserDto.oldPassword,
             user.password
           );
@@ -78,7 +75,7 @@ export class UserService {
             throw new ForbiddenException("Old password is incorrect");
           }
 
-          updateData.password = await this.hashPassword(
+          updateData.password = await this.hashService.hashPassword(
             updateUserDto.newPassword
           );
         }

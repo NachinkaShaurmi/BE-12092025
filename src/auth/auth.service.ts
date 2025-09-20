@@ -7,12 +7,12 @@ import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import * as bcrypt from "bcrypt";
 import { User } from "../user/entities/user.entity";
 import { CreateUserDto } from "../user/dto/create-user.dto";
 import { LoginUserDto } from "./dto/login-user.dto";
 import { JwtPayload } from "./interfaces/jwt-payload.interface";
 import { AccountService } from "../account/account.service";
+import { HashService } from "../common/services/hash.service";
 
 @Injectable()
 export class AuthService {
@@ -21,11 +21,12 @@ export class AuthService {
     private userRepository: Repository<User>,
     private jwtService: JwtService,
     private configService: ConfigService,
-    private accountService: AccountService
+    private accountService: AccountService,
+    private hashService: HashService
   ) {}
 
   async signup(createUserDto: CreateUserDto) {
-    const hashedPassword = await this.hashPassword(createUserDto.password);
+    const hashedPassword = await this.hashService.hashPassword(createUserDto.password);
     const user = this.userRepository.create({
       ...createUserDto,
       password: hashedPassword,
@@ -43,7 +44,7 @@ export class AuthService {
       throw new ForbiddenException("User not found");
     }
 
-    const isPasswordValid = await bcrypt.compare(
+    const isPasswordValid = await this.hashService.comparePassword(
       loginDto.password,
       user.password
     );
@@ -76,13 +77,7 @@ export class AuthService {
     }
   }
 
-  private async hashPassword(password: string): Promise<string> {
-    const salt = this.configService.get("CRYPT_SALT");
 
-    if (!salt) throw new Error("CRYPT_SALT is not configured");
-
-    return bcrypt.hash(password, parseInt(salt, 10));
-  }
 
   private async generateTokens(userId: string, login: string) {
     const payload: JwtPayload = { userId, login };
