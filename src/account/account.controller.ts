@@ -48,7 +48,7 @@ export class AccountController {
   @ApiOperation({ summary: "Get accounts by user ID" })
   @ApiResponse({ status: 200, type: [Account] })
   findByUserId(@Param("userId", ParseUUIDPipe) userId: string) {
-    return this.accountService.findByUserId(userId);
+    return this.accountService.findByUserIdWithTransactions(userId);
   }
 
   @Put(":id")

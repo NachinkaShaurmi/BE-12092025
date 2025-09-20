@@ -28,13 +28,13 @@ export class AccountService {
   }
 
   async findAll(): Promise<Account[]> {
-    return this.accountRepository.find({ relations: ["user"] });
+    return this.accountRepository.find();
   }
 
   async findOne(id: string): Promise<Account> {
     const account = await this.accountRepository.findOne({
       where: { id },
-      relations: ["user", "outgoingTransactions", "incomingTransactions"],
+      relations: ["user"],
     });
 
     if (!account) throw new NotFoundException("Account not found");
@@ -44,14 +44,19 @@ export class AccountService {
   async findByUserId(userId: string): Promise<Account[]> {
     return this.accountRepository.find({
       where: { userId },
+    });
+  }
+
+  async findByUserIdWithTransactions(userId: string): Promise<Account[]> {
+    return this.accountRepository.find({
+      where: { userId },
       relations: [
-        "user",
         "outgoingTransactions",
         "incomingTransactions",
-        "outgoingTransactions.fromAccount.user",
+        "outgoingTransactions.toAccount",
+        "incomingTransactions.fromAccount",
         "outgoingTransactions.toAccount.user",
         "incomingTransactions.fromAccount.user",
-        "incomingTransactions.toAccount.user",
       ],
     });
   }
@@ -65,20 +70,11 @@ export class AccountService {
         "incomingTransactions",
         "outgoingTransactions.toAccount",
         "incomingTransactions.fromAccount",
-        "outgoingTransactions.fromAccount.user",
-        "outgoingTransactions.toAccount.user",
-        "incomingTransactions.fromAccount.user",
-        "incomingTransactions.toAccount.user",
       ],
     });
 
     if (!account) throw new NotFoundException("Account not found");
     return account;
-  }
-
-  async updateBalance(id: string, newBalance: number): Promise<Account> {
-    await this.accountRepository.update(id, { balance: newBalance });
-    return this.findOne(id);
   }
 
   private getRandomCurrency(): Currency {
@@ -90,7 +86,8 @@ export class AccountService {
     id: string,
     updateAccountDto: UpdateAccountDto
   ): Promise<Account> {
-    const account = await this.findOne(id);
+    const account = await this.accountRepository.findOneBy({ id });
+    if (!account) throw new NotFoundException("Account not found");
 
     if (updateAccountDto.name !== undefined) {
       account.name = updateAccountDto.name;
