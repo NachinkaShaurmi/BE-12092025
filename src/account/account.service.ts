@@ -70,6 +70,8 @@ export class AccountService {
         "incomingTransactions",
         "outgoingTransactions.toAccount",
         "incomingTransactions.fromAccount",
+        "outgoingTransactions.toAccount.user",
+        "incomingTransactions.fromAccount.user",
       ],
     });
 
