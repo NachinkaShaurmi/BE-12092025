@@ -84,10 +84,7 @@ export class AccountService {
     return currencies[Math.floor(Math.random() * currencies.length)];
   }
 
-  async update(
-    id: string,
-    updateAccountDto: UpdateAccountDto
-  ): Promise<Account> {
+  async update(id: string, updateAccountDto: UpdateAccountDto) {
     const account = await this.accountRepository.findOneBy({ id });
     if (!account) throw new NotFoundException("Account not found");
 
@@ -95,7 +92,20 @@ export class AccountService {
       account.name = updateAccountDto.name;
     }
 
-    return this.accountRepository.save(account);
+    await this.accountRepository.save(account);
+
+    return this.accountRepository.findOne({
+      where: { id },
+      relations: [
+        "user",
+        "outgoingTransactions",
+        "incomingTransactions",
+        "outgoingTransactions.toAccount",
+        "incomingTransactions.fromAccount",
+        "outgoingTransactions.toAccount.user",
+        "incomingTransactions.fromAccount.user",
+      ],
+    });
   }
 
   private getRandomBalance(): number {
